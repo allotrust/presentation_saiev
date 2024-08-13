@@ -16,15 +16,13 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r cars}
-# Load necessary libraries
 library(dplyr)         # For data manipulation
 library(tm)            # For text mining
 library(e1071)         # For the Naive Bayes classifier
 library(SnowballC)     # For stemming words
-library(RWeka)         # For bigram tokenization
 
 # Load the dataset from a CSV file
-my_data <- read.csv("spam.csv", encoding = "ISO-8859-1")
+my_data <- read.csv("spam.csv")
 
 # Rename columns for clarity
 colnames(my_data) <- c("label", "message", "X", "X.1", "X.2")
@@ -67,15 +65,9 @@ corpus <- corpus %>%
   tm_map(stemDocument) %>%                          # Stem words to their root form
   tm_map(stripWhitespace)                           # Remove extra whitespace
 
-# Define a function to tokenize text into bigrams (pairs of words)
-BigramTokenizer <- function(x) {
-  NGramTokenizer(x, Weka_control(min = 2, max = 2))
-}
-
-# Create a Document-Term Matrix (DTM) with TF-IDF weighting and bigram tokenization
+# Create a Document-Term Matrix (DTM) with TF-IDF weighting
 dtm <- DocumentTermMatrix(corpus, control = list(
-  weighting = weightTfIdf,     # Use TF-IDF weighting
-  tokenize = BigramTokenizer   # Apply bigram tokenization
+  weighting = weightTfIdf   # Use TF-IDF weighting
 ))
 
 # Remove sparse terms to reduce dimensionality
@@ -106,5 +98,6 @@ accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
 # Print the confusion matrix and accuracy of the model
 print(confusion_matrix)
 print(paste("Accuracy:", round(accuracy, 2)))
+
 
 ```

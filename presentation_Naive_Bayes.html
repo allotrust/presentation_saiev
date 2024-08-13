@@ -366,8 +366,7 @@ on using R Markdown see <a href="http://rmarkdown.rstudio.com" class="uri">http:
 generated that includes both content as well as the output of any
 embedded R code chunks within the document. You can embed an R code
 chunk like this:</p>
-<pre class="r"><code># Load necessary libraries
-library(dplyr)         # For data manipulation</code></pre>
+<pre class="r"><code>library(dplyr)         # For data manipulation</code></pre>
 <pre><code>## Warning: le package &#39;dplyr&#39; a été compilé avec la version R 4.3.3</code></pre>
 <pre><code>## 
 ## Attachement du package : &#39;dplyr&#39;</code></pre>
@@ -382,10 +381,9 @@ library(dplyr)         # For data manipulation</code></pre>
 <pre><code>## Le chargement a nécessité le package : NLP</code></pre>
 <pre class="r"><code>library(e1071)         # For the Naive Bayes classifier
 library(SnowballC)     # For stemming words
-library(RWeka)         # For bigram tokenization</code></pre>
-<pre><code>## Warning: le package &#39;RWeka&#39; a été compilé avec la version R 4.3.3</code></pre>
-<pre class="r"><code># Load the dataset from a CSV file
-my_data &lt;- read.csv(&quot;spam.csv&quot;, encoding = &quot;ISO-8859-1&quot;)
+
+# Load the dataset from a CSV file
+my_data &lt;- read.csv(&quot;spam.csv&quot;)
 
 # Rename columns for clarity
 colnames(my_data) &lt;- c(&quot;label&quot;, &quot;message&quot;, &quot;X&quot;, &quot;X.1&quot;, &quot;X.2&quot;)
@@ -439,19 +437,11 @@ corpus &lt;- corpus %&gt;%
 <pre><code>## Warning in tm_map.SimpleCorpus(., stemDocument): transformation drops documents</code></pre>
 <pre><code>## Warning in tm_map.SimpleCorpus(., stripWhitespace): transformation drops
 ## documents</code></pre>
-<pre class="r"><code># Define a function to tokenize text into bigrams (pairs of words)
-BigramTokenizer &lt;- function(x) {
-  NGramTokenizer(x, Weka_control(min = 2, max = 2))
-}
-
-# Create a Document-Term Matrix (DTM) with TF-IDF weighting and bigram tokenization
+<pre class="r"><code># Create a Document-Term Matrix (DTM) with TF-IDF weighting
 dtm &lt;- DocumentTermMatrix(corpus, control = list(
-  weighting = weightTfIdf,     # Use TF-IDF weighting
-  tokenize = BigramTokenizer   # Apply bigram tokenization
+  weighting = weightTfIdf   # Use TF-IDF weighting
 ))</code></pre>
 <pre><code>## Warning in TermDocumentMatrix.SimpleCorpus(x, control): custom functions are
-## ignored</code></pre>
-<pre><code>## Warning in TermDocumentMatrix.SimpleCorpus(x, control): custom tokenizer is
 ## ignored</code></pre>
 <pre><code>## Warning in weighting(x): empty document(s): 197 1668 1789 2458 2545 3136 3150
 ## 3494 3967 4153 4286 4424 4470 4537 4684 4807 4822 4877 4900 4983 5146 5270 5503
