@@ -65,10 +65,8 @@ corpus <- corpus %>%
   tm_map(stemDocument) %>%                          # Stem words to their root form
   tm_map(stripWhitespace)                           # Remove extra whitespace
 
-# Create a Document-Term Matrix (DTM) with TF-IDF weighting
-dtm <- DocumentTermMatrix(corpus, control = list(
-  weighting = weightTfIdf   # Use TF-IDF weighting
-))
+# Create a Document-Term Matrix (DTM) without weighting (just raw term frequencies)
+dtm <- DocumentTermMatrix(corpus)
 
 # Remove sparse terms to reduce dimensionality
 dtm <- removeSparseTerms(dtm, 0.99)

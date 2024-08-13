@@ -437,16 +437,10 @@ corpus &lt;- corpus %&gt;%
 <pre><code>## Warning in tm_map.SimpleCorpus(., stemDocument): transformation drops documents</code></pre>
 <pre><code>## Warning in tm_map.SimpleCorpus(., stripWhitespace): transformation drops
 ## documents</code></pre>
-<pre class="r"><code># Create a Document-Term Matrix (DTM) with TF-IDF weighting
-dtm &lt;- DocumentTermMatrix(corpus, control = list(
-  weighting = weightTfIdf   # Use TF-IDF weighting
-))</code></pre>
-<pre><code>## Warning in TermDocumentMatrix.SimpleCorpus(x, control): custom functions are
-## ignored</code></pre>
-<pre><code>## Warning in weighting(x): empty document(s): 197 1668 1789 2458 2545 3136 3150
-## 3494 3967 4153 4286 4424 4470 4537 4684 4807 4822 4877 4900 4983 5146 5270 5503
-## 5629 5914 6268 6525 7355 8036 8676 8730 9094</code></pre>
-<pre class="r"><code># Remove sparse terms to reduce dimensionality
+<pre class="r"><code># Create a Document-Term Matrix (DTM) without weighting (just raw term frequencies)
+dtm &lt;- DocumentTermMatrix(corpus)
+
+# Remove sparse terms to reduce dimensionality
 dtm &lt;- removeSparseTerms(dtm, 0.99)
 
 # Split the data into training (70%) and testing (30%) sets
@@ -475,10 +469,10 @@ accuracy &lt;- sum(diag(confusion_matrix)) / sum(confusion_matrix)
 print(confusion_matrix)</code></pre>
 <pre><code>##            test_labels
 ## predictions  ham spam
-##        ham  1392  645
-##        spam   71  787</code></pre>
+##        ham  1416  451
+##        spam   47  981</code></pre>
 <pre class="r"><code>print(paste(&quot;Accuracy:&quot;, round(accuracy, 2)))</code></pre>
-<pre><code>## [1] &quot;Accuracy: 0.75&quot;</code></pre>
+<pre><code>## [1] &quot;Accuracy: 0.83&quot;</code></pre>
 </div>
 
 
