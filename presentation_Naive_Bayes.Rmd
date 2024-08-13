@@ -1,0 +1,110 @@
+---
+title: "Naïve Bayes Classifiers in Data Mining"
+author: "Shamil Saiev"
+date: "2024-08-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+# Load necessary libraries
+library(dplyr)         # For data manipulation
+library(tm)            # For text mining
+library(e1071)         # For the Naive Bayes classifier
+library(SnowballC)     # For stemming words
+library(RWeka)         # For bigram tokenization
+
+# Load the dataset from a CSV file
+my_data <- read.csv("spam.csv", encoding = "ISO-8859-1")
+
+# Rename columns for clarity
+colnames(my_data) <- c("label", "message", "X", "X.1", "X.2")
+
+# Drop unnecessary columns
+my_data <- my_data[, c("label", "message")]
+
+# Remove rows with empty or NA messages
+my_data <- my_data %>% filter(message != "" & !is.na(message))
+
+# Convert the label column to a factor for classification
+my_data$label <- as.factor(my_data$label)
+
+# Oversample the minority class (spam) to balance the dataset
+spam_data <- my_data %>% filter(label == "spam")
+ham_data <- my_data %>% filter(label == "ham")
+
+set.seed(42)  # For reproducibility
+# Oversample the spam data to have the same number of rows as the ham data
+oversampled_spam <- spam_data %>% sample_n(nrow(ham_data), replace = TRUE)
+
+# Combine the oversampled spam data with the ham data
+oversampled_data <- rbind(ham_data, oversampled_spam)
+
+# Shuffle the rows of the combined dataset
+oversampled_data <- oversampled_data %>% sample_frac(1)
+
+# Create a text corpus from the message column
+corpus <- Corpus(VectorSource(oversampled_data$message))
+
+# Convert text encoding to UTF-8 to handle special characters
+corpus <- tm_map(corpus, content_transformer(function(x) iconv(x, to = "UTF-8", sub = "byte")))
+
+# Preprocess the text data
+corpus <- corpus %>%
+  tm_map(content_transformer(tolower)) %>%          # Convert text to lowercase
+  tm_map(removePunctuation) %>%                     # Remove punctuation
+  tm_map(removeNumbers) %>%                         # Remove numbers
+  tm_map(removeWords, stopwords("english")) %>%     # Remove common stopwords
+  tm_map(stemDocument) %>%                          # Stem words to their root form
+  tm_map(stripWhitespace)                           # Remove extra whitespace
+
+# Define a function to tokenize text into bigrams (pairs of words)
+BigramTokenizer <- function(x) {
+  NGramTokenizer(x, Weka_control(min = 2, max = 2))
+}
+
+# Create a Document-Term Matrix (DTM) with TF-IDF weighting and bigram tokenization
+dtm <- DocumentTermMatrix(corpus, control = list(
+  weighting = weightTfIdf,     # Use TF-IDF weighting
+  tokenize = BigramTokenizer   # Apply bigram tokenization
+))
+
+# Remove sparse terms to reduce dimensionality
+dtm <- removeSparseTerms(dtm, 0.99)
+
+# Split the data into training (70%) and testing (30%) sets
+set.seed(123)
+train_index <- sample(1:nrow(dtm), 0.7 * nrow(dtm))
+train_dtm <- dtm[train_index, ]
+test_dtm <- dtm[-train_index, ]
+train_labels <- oversampled_data$label[train_index]
+test_labels <- oversampled_data$label[-train_index]
+
+# Convert the DTM to a standard matrix for the Naive Bayes classifier
+train_dtm_matrix <- as.matrix(train_dtm)
+test_dtm_matrix <- as.matrix(test_dtm)
+
+# Train the Naive Bayes model with Laplace smoothing to handle zero probabilities
+classifier <- naiveBayes(train_dtm_matrix, train_labels, laplace = 1)
+
+# Make predictions on the test set
+predictions <- predict(classifier, test_dtm_matrix)
+
+# Evaluate the model by creating a confusion matrix
+confusion_matrix <- table(predictions, test_labels)
+accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
+
+# Print the confusion matrix and accuracy of the model
+print(confusion_matrix)
+print(paste("Accuracy:", round(accuracy, 2)))
+
+```
